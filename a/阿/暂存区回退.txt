@@ -1,0 +1,22 @@
+删除文件，文件夹
+这里以删除 test文件夹为案例
+
+git rm -r --cached test //--cached不会把本地的test删除
+git commit -m 'delete test dir'
+git push -u origin master
+
+https://blog.csdn.net/qq_25954159/article/details/114122590
+///////////////////////////////////////////////////////
+工作区的文件回滚到本地
+工作区修改了一个文件，并提交到了暂存区，提交了以后，现在我想撤回暂存区，但是我工作区的修改还想要
+git reset HEAD
+git reset HEAD 就是你暂存区不要了，工作区的修改还要保留
+注意的是，--hard在本地工作区回退，是相对你上次提交到本地仓库的回退
+第二种情况，工作区修改了一个文件，并提交到了暂存区，现在我想撤回暂存区，而且我工作区的修改也一并不想要了
+git reset --hard "HEAD^"
+
+https://blog.csdn.net/weixin_43258703/article/details/121581354
+
+
+
+
