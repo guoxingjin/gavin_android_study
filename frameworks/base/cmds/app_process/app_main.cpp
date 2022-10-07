@@ -30,7 +30,8 @@ static void app_usage()
     fprintf(stderr,
         "Usage: app_process [java-options] cmd-dir start-class-name [options]\n");
 }
-
+// AndroidRuntime 是个命名空间
+// AppRuntime继承AndoridRuntime
 class AppRuntime : public AndroidRuntime
 {
 public:
@@ -181,6 +182,9 @@ int main(int argc, char* const argv[])
       }
       ALOGV("app_process main with argv: %s", argv_String.string());
     }
+	
+	//AppRuntime是AndroidRuntime的子类，
+	//这里初始化runtime对象时Androidruntime中的gCurRuntime变量会被初始化为AppRuntime对象：runtime
 
     AppRuntime runtime(argv[0], computeArgBlockSize(argc, argv));
     // Process command line arguments
@@ -213,6 +217,10 @@ int main(int argc, char* const argv[])
     //
     // As an exception to the above rule, anything in "spaced commands"
     // goes to the vm even though it has a space in it.
+    /**
+
+
+	*/
     const char* spaced_commands[] = { "-cp", "-classpath" };
     // Allow "spaced commands" to be succeeded by exactly 1 argument (regardless of -s).
     bool known_command = false;
@@ -261,13 +269,13 @@ int main(int argc, char* const argv[])
     String8 className;
 
     ++i;  // Skip unused "parent dir" argument.
-    while (i < argc) {
+    while (i < argc) {//忽略第一个参数：-Xzygote
         const char* arg = argv[i++];
-        if (strcmp(arg, "--zygote") == 0) {
+        if (strcmp(arg, "--zygote") == 0) {//由参数列表可知，该项成立
 			//
             zygote = true;
             niceName = ZYGOTE_NICE_NAME;
-        } else if (strcmp(arg, "--start-system-server") == 0) {
+        } else if (strcmp(arg, "--start-system-server") == 0) {//由参数列表可知，该项成立
             startSystemServer = true;
         } else if (strcmp(arg, "--application") == 0) {
             application = true;
@@ -282,14 +290,15 @@ int main(int argc, char* const argv[])
         }
     }
 
-    Vector<String8> args;
-    if (!className.isEmpty()) {
+    Vector<String8> args;//启动Zygote进程时使用的参数列表
+    if (!className.isEmpty()) {//非Zygote模式
         // We're not in zygote mode, the only argument we need to pass
         // to RuntimeInit is the application argument.
         //
         // The Remainder of args get passed to startup class main(). Make
         // copies of them before we overwrite them with the process name.
         args.add(application ? String8("application") : String8("tool"));
+		//如果不是zygote模式,则把要启动的Java类的名字保存到mClassName字段中
         runtime.setClassNameAndArgs(className, argc - i, argv + i);
 
         if (!LOG_NDEBUG) {
@@ -308,6 +317,7 @@ int main(int argc, char* const argv[])
         maybeCreateDalvikCache();
 
         if (startSystemServer) {
+			//添加参数
             args.add(String8("start-system-server"));
         }
 
@@ -320,21 +330,25 @@ int main(int argc, char* const argv[])
 
         String8 abiFlag("--abi-list=");
         abiFlag.append(prop);
+		//添加参数
         args.add(abiFlag);
 
         // In zygote mode, pass all remaining arguments to the zygote
         // main() method.
         for (; i < argc; ++i) {
+			//添加剩余的参数
             args.add(String8(argv[i]));
         }
     }
 
+	//设置进程名
     if (!niceName.isEmpty()) {
         runtime.setArgv0(niceName.string(), true /* setProcName */);
     }
 
     if (zygote) {
 		// 启动了ZygoteInit Java程序（注意：这个Java程序还是一个Native 进程）
+		//附带参数列表，在Zygote模式下，同过AndroidRuntime::start()启动Zygote进程
         runtime.start("com.android.internal.os.ZygoteInit", args, zygote);
     } else if (className) {
         runtime.start("com.android.internal.os.RuntimeInit", args, zygote);
