@@ -703,7 +703,8 @@ public final class SystemServer implements Dumpable {
         try {
             t.traceBegin("InitBeforeStartServices");
 
-            // Record the process start information in sys props.
+            // Record the process start information in sys props(支撑).
+			// 在sys支撑中，记录进程启动信息
             SystemProperties.set(SYSPROP_START_COUNT, String.valueOf(mStartCount));
             SystemProperties.set(SYSPROP_START_ELAPSED, String.valueOf(mRuntimeStartElapsedTime));
             SystemProperties.set(SYSPROP_START_UPTIME, String.valueOf(mRuntimeStartUptime));
@@ -713,7 +714,7 @@ public final class SystemServer implements Dumpable {
 
             //
             // Default the timezone property to GMT if not set.
-            //
+            //  如果没有设置，则默认时区属性为GMT
             String timezoneProperty = SystemProperties.get("persist.sys.timezone");
             if (!isValidTimeZoneId(timezoneProperty)) {
                 Slog.w(TAG, "persist.sys.timezone is not valid (" + timezoneProperty
